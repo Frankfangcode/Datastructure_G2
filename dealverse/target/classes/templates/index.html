@@ -42,13 +42,16 @@
   <div class="card">
     <img class="logo" th:src="@{/images/logo.png}" alt="logo">
     <h1>Dealverse Search</h1>
-    <form class="bar" action="/search" method="get">
-      <input type="text" name="keyword" placeholder="輸入關鍵字…" value="${keyword}">
+
+    <!-- 用 th:action 與 th:value -->
+    <form class="bar" th:action="@{/search}" method="get">
+      <input type="text" name="keyword" placeholder="輸入關鍵字…" th:value="${keyword}">
       <button type="submit">搜尋</button>
     </form>
 
     <div class="results">
       <ul>
+        <!-- 只有有 results 才顯示 -->
         <th:block th:if="${results != null}">
           <li th:each="e : ${results}">
             <a th:href="${e.value}" th:text="${e.key}" target="_blank"></a><br>
@@ -56,6 +59,7 @@
             <hr>
           </li>
         </th:block>
+
         <th:block th:if="${error != null}">
           <p th:text="${error}"></p>
         </th:block>
