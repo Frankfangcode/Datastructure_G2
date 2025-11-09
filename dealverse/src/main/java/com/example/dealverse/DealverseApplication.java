@@ -3,7 +3,7 @@ package com.example.dealverse;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.example.dealverse")
 public class DealverseApplication {
 
 	public static void main(String[] args) {
