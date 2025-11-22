@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>DealVerse – Smart Deal Finder</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <h1>DealVerse – Smart Deal Finder</h1>
+    <p class="subtitle">輸入商品名稱，我幫你算「實付金額」跟「實際省多少」。</p>
+
+    <form th:action="@{/search}" method="get" class="search-form">
+        <input type="text" name="keyword"
+               th:value="${keyword}"
+               placeholder="例：iPhone 17 Pro 256G" required>
+        <button type="submit">搜尋</button>
+    </form>
+
+    <div class="message" th:if="${error}">
+        <p th:text="${error}"></p>
+    </div>
+
+    <div class="results" th:if="${results}">
+        <h2 th:if="${keyword}" th:text="'搜尋關鍵字：' + ${keyword}"></h2>
+
+        <table>
+            <thead>
+            <tr>
+                <th>平台 / 價格摘要</th>
+                <th>連結</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="entry : ${results}">
+                <td th:text="${entry.key}"></td>
+                <td><a th:href="${entry.value}" target="_blank">前往購買頁</a></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <footer>
+        <small>DealVerse – Beat Google &amp; AI by real savings.</small>
+    </footer>
+</div>
+</body>
+</html>
