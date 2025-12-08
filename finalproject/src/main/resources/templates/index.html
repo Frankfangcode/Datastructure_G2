@@ -1,48 +1,127 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="zh-Hant">
+<html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>DealVerse – Smart Deal Finder</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <meta charset="utf-8">
+    <title>Dealverse Search</title>
+    <style>
+        :root{
+            --green:#62C4A1; --blue:#44A6E0; --navy:#214D8C;
+        }
+        *{box-sizing:border-box}
+        body{
+            margin:0;
+            font-family:"Poppins","Noto Sans TC",sans-serif;
+            min-height:100vh;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:linear-gradient(160deg,var(--green) 0%,var(--blue) 100%);
+        }
+        .card{
+            width:760px;
+            background:#fff;
+            border-radius:24px;
+            padding:40px;
+            box-shadow:0 10px 30px rgba(0,0,0,.12);
+            text-align:center;
+        }
+        .logo{
+            width:88px;
+            height:88px;
+            border-radius:50%;
+            margin-bottom:12px;
+        }
+        h1{
+            margin:6px 0 22px;
+            color:var(--navy);
+        }
+        .bar{
+            display:flex;
+            gap:10px;
+            justify-content:center;
+        }
+        input[type=text]{
+            width:75%;
+            padding:12px 14px;
+            font-size:16px;
+            border:2px solid var(--green);
+            border-radius:10px;
+            outline:0;
+            transition:.2s;
+        }
+        input[type=text]:focus{
+            border-color:var(--blue);
+            box-shadow:0 0 6px rgba(68,166,224,.4);
+        }
+        button{
+            padding:12px 18px;
+            border:0;
+            border-radius:10px;
+            cursor:pointer;
+            background:var(--green);
+            color:#fff;
+            font-weight:600;
+            transition:.2s;
+        }
+        button:hover{ background:var(--blue); }
+
+        .results{
+            margin-top:26px;
+            text-align:left;
+        }
+        .results a{
+            color:var(--navy);
+            font-weight:600;
+            text-decoration:none;
+        }
+        .results a:hover{ text-decoration:underline; }
+        .results .url{
+            color:#666;
+            font-size:13px;
+        }
+        hr{
+            border:none;
+            border-top:1px solid #eee;
+            margin:12px 0;
+        }
+        .error{
+            margin-top:20px;
+            color:#b91c1c;
+            font-size:14px;
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-    <h1>DealVerse – Smart Deal Finder</h1>
-    <p class="subtitle">輸入商品名稱，我幫你算「實付金額」跟「實際省多少」。</p>
+<div class="card">
+    <!-- logo 圖片放在 src/main/resources/static/images/logo.png -->
+    <img class="logo" th:src="@{/images/logo.png}" alt="logo">
+    <h1>Dealverse Search</h1>
 
-    <form th:action="@{/search}" method="get" class="search-form">
+    <!-- 搜尋列 -->
+    <form class="bar" th:action="@{/search}" method="get">
         <input type="text" name="keyword"
-               th:value="${keyword}"
-               placeholder="例：iPhone 17 Pro 256G" required>
+               placeholder="輸入商品關鍵字…"
+               th:value="${keyword}">
         <button type="submit">搜尋</button>
     </form>
 
-    <div class="message" th:if="${error}">
-        <p th:text="${error}"></p>
+    <div class="results">
+        <ul>
+            <!-- 有 results 才顯示清單 -->
+            <th:block th:if="${results != null}">
+                <li th:each="e : ${results}">
+                    <a th:href="${e.value}" th:text="${e.key}" target="_blank"></a><br>
+                    <span class="url" th:text="${e.value}"></span>
+                    <hr>
+                </li>
+            </th:block>
+
+            <!-- 有錯誤訊息就顯示 -->
+            <th:block th:if="${error != null}">
+                <p class="error" th:text="${error}"></p>
+            </th:block>
+        </ul>
     </div>
-
-    <div class="results" th:if="${results}">
-        <h2 th:if="${keyword}" th:text="'搜尋關鍵字：' + ${keyword}"></h2>
-
-        <table>
-            <thead>
-            <tr>
-                <th>平台 / 價格摘要</th>
-                <th>連結</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="entry : ${results}">
-                <td th:text="${entry.key}"></td>
-                <td><a th:href="${entry.value}" target="_blank">前往購買頁</a></td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <footer>
-        <small>DealVerse – Beat Google &amp; AI by real savings.</small>
-    </footer>
 </div>
 </body>
 </html>
