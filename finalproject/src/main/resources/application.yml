@@ -1,0 +1,12 @@
+server:
+  port: 8080
+
+spring:
+  thymeleaf:
+    cache: false
+
+google:
+  search:
+    api-key: AIzaSyDkiWlUggDf4uy5pdHoLCq9fO5GSqXgBCw
+    cx: c08cd18b751dd44ea 
+
