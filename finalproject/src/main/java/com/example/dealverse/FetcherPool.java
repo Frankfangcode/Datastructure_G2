@@ -8,6 +8,7 @@ public class FetcherPool {
 
     public void addConnector(Connector connector) {
         connectors.add(connector);
+        connectors.add(new ShopeeConnector());
     }
 
     public List<RawOffer> fetchAll(Query query) {
