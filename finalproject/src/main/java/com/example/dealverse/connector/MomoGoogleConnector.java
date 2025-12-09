@@ -1,5 +1,6 @@
 package com.example.dealverse.connector;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,21 +21,37 @@ public class MomoGoogleConnector implements Connector {
 
     @Override
     public String getSourceName() {
-        return "MOMO_GOOGLE";
+        return "momo";
     }
 
     @Override
-
     public List<RawOffer> fetch(Query query) {
-        // 先用「純關鍵字」測試
-        Map<String, String> map = googleSearchService.search(query.getText());
+        // 只用關鍵字，site 交給 GoogleSearchService 處理
+        Map<String, String> map =
+                googleSearchService.searchSite(query.getText(), "momoshop.com.tw");
+
         List<RawOffer> list = new ArrayList<>();
         for (Map.Entry<String, String> e : map.entrySet()) {
-            RawOffer ro = new RawOffer(e.getKey(), "momo", e.getValue());
+            String title = e.getKey();
+            String url = e.getValue();
+
+            if (!urlMatchesDomain(url, "momoshop.com.tw")) continue;
+
+            RawOffer ro = new RawOffer(title, "momo", url);
             ro.setListPrice(0);
             ro.setShippingFee(0);
             list.add(ro);
         }
         return list;
+    }
+
+    private boolean urlMatchesDomain(String url, String expectedDomain) {
+        try {
+            URI uri = new URI(url);
+            String host = uri.getHost();
+            return host != null && host.endsWith(expectedDomain);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.example.dealverse.connector;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,21 +21,36 @@ public class PchomeGoogleConnector implements Connector {
 
     @Override
     public String getSourceName() {
-        return "PCHOME_GOOGLE";
+        return "pchome";
     }
 
     @Override
-
     public List<RawOffer> fetch(Query query) {
-        // 先用「純關鍵字」測試
-        Map<String, String> map = googleSearchService.search(query.getText());
+        Map<String, String> map =
+                googleSearchService.searchSite(query.getText(), "24h.pchome.com.tw");
+
         List<RawOffer> list = new ArrayList<>();
         for (Map.Entry<String, String> e : map.entrySet()) {
-            RawOffer ro = new RawOffer(e.getKey(), "pchome", e.getValue());
+            String title = e.getKey();
+            String url = e.getValue();
+
+            if (!urlMatchesDomain(url, "24h.pchome.com.tw")) continue;
+
+            RawOffer ro = new RawOffer(title, "pchome", url);
             ro.setListPrice(0);
             ro.setShippingFee(0);
             list.add(ro);
         }
         return list;
+    }
+
+    private boolean urlMatchesDomain(String url, String expectedDomain) {
+        try {
+            URI uri = new URI(url);
+            String host = uri.getHost();
+            return host != null && host.endsWith(expectedDomain);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

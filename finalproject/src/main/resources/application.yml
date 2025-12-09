@@ -6,7 +6,6 @@ spring:
     cache: false
 
 google:
-  search:
     api-key: AIzaSyDkiWlUggDf4uy5pdHoLCq9fO5GSqXgBCw
-    cx: c08cd18b751dd44ea 
+    cx: c280fd42663b9447d 
 
