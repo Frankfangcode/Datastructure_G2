@@ -1,16 +1,17 @@
 package com.example.dealverse.connector;
 
-import com.example.dealverse.model.GoogleResult;
-import com.example.dealverse.model.GoogleSearchResponse;
+import java.net.URI;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import com.example.dealverse.model.GoogleResult;
+import com.example.dealverse.model.GoogleSearchResponse;
 
 @Service
 public class GoogleSearchService {
