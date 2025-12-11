@@ -9,14 +9,18 @@ import org.springframework.stereotype.Component;
 
 import com.example.dealverse.model.Query;
 import com.example.dealverse.model.RawOffer;
+import com.example.dealverse.service.PriceExtractor;
 
 @Component
 public class MomoGoogleConnector implements Connector {
 
     private final GoogleSearchService googleSearchService;
+    private final PriceExtractor priceExtractor;
 
-    public MomoGoogleConnector(GoogleSearchService googleSearchService) {
+    public MomoGoogleConnector(GoogleSearchService googleSearchService,
+                               PriceExtractor priceExtractor) {
         this.googleSearchService = googleSearchService;
+        this.priceExtractor = priceExtractor;
     }
 
     @Override
@@ -26,29 +30,50 @@ public class MomoGoogleConnector implements Connector {
 
     @Override
     public List<RawOffer> fetch(Query query) {
-        // 只用關鍵字，site 交給 GoogleSearchService 處理
+
         Map<String, String> map =
                 googleSearchService.searchSite(query.getText(), "momoshop.com.tw");
 
         List<RawOffer> list = new ArrayList<>();
+
         for (Map.Entry<String, String> e : map.entrySet()) {
             String title = e.getKey();
-            String url = e.getValue();
+            String url   = e.getValue();
 
-            if (!urlMatchesDomain(url, "momoshop.com.tw")) continue;
+            // 確保真的屬於 momo
+            if (!urlMatchesDomain(url, "momoshop.com.tw")) {
+                continue;
+            }
 
             RawOffer ro = new RawOffer(title, "momo", url);
-            ro.setListPrice(0);
-            ro.setShippingFee(0);
+
+            // ======== 價格爬取在這裡 =========
+            try {
+                Integer price = priceExtractor.extractPrice(url, "momo");
+                if (price != null) {
+                    ro.setListPrice(price);
+                    System.out.println("[PriceExtractor] momo price = " + price + " , url = " + url);
+                } else {
+                    ro.setListPrice(0);
+                }
+            } catch (Exception ex) {
+                System.out.println("[PriceExtractor] failed for momo, url = " + url
+                        + " , err = " + ex.getMessage());
+                ro.setListPrice(0);
+            }
+            // =================================
+
+            ro.setShippingFee(0); // 目前先固定 0
             list.add(ro);
         }
+
         return list;
     }
 
     private boolean urlMatchesDomain(String url, String expectedDomain) {
         try {
             URI uri = new URI(url);
-            String host = uri.getHost();
+            String host = uri.getHost(); // e.g. www.momoshop.com.tw
             return host != null && host.endsWith(expectedDomain);
         } catch (Exception e) {
             return false;
