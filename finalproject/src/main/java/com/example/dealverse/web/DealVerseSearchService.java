@@ -37,7 +37,7 @@ public class DealVerseSearchService {
                 title = r.getOffer().getSource();
             }
 
-            map.put(title + " | pay=" + r.getPay(), r.getOffer().getUrl());
+            map.put(title, r.getOffer().getUrl());
         }
         return map;
     }

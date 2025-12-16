@@ -23,7 +23,7 @@ public class SearchController {
 
     @GetMapping("/search")
     public String search(@RequestParam("keyword") String keyword,
-                         @RequestParam(required = false, defaultValue = "shopee") String site,
+                         @RequestParam(required = false, defaultValue = "") String site,
                          Model model) {
         try {
             // ✅ 這裡改成把 site 傳下去
