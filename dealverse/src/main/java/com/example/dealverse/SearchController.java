@@ -8,22 +8,31 @@ import java.util.Map;
 @Controller
 public class SearchController {
     private final GoogleSearchService google;
+    private final MomoService momoService;
 
-    public SearchController(GoogleSearchService google) {
+    public SearchController(GoogleSearchService google, MomoService momoService) {
         this.google = google;
+        this.momoService = momoService;
     }
 
     @GetMapping("/")
-    public String home() { return "index"; }
+    public String home() {
+        return "index";
+    }
 
     @GetMapping("/ping")
     @ResponseBody
-    public String ping() { return "ok"; }
+    public String ping() {
+        return "ok";
+    }
 
     @GetMapping("/search")
     public String search(@RequestParam String keyword, Model model) {
         try {
             Map<String, String> results = google.search(keyword);
+            // 範例：使用 iPhone 15 的商品編號測試
+            String momoPrice = momoService.getMomoPrice("14364332");
+            model.addAttribute("momoPrice", momoPrice);
             model.addAttribute("keyword", keyword);
             model.addAttribute("results", results);
             if (results.isEmpty()) {

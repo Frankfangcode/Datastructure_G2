@@ -12,8 +12,7 @@ import org.springframework.stereotype.Service;
 @Primary
 public class JsoupPriceExtractor implements PriceExtractor {
 
-    private static final Pattern PRICE_PATTERN =
-            Pattern.compile("(\\d{1,3}(,\\d{3})*|\\d{3,})(?=\\s*(元|NT|＄|\\$))");
+    private static final Pattern PRICE_PATTERN = Pattern.compile("(\\d{1,3}(,\\d{3})*|\\d{3,})(?=\\s*(元|NT|＄|\\$))");
 
     @Override
     public Integer extractPrice(String url, String source) {

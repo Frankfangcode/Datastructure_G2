@@ -29,8 +29,10 @@ public class GoogleSearchService {
     public Map<String, String> search(String query) {
         var results = new LinkedHashMap<String, String>();
 
-        if (!enabled) return results;
-        if (apiKey == null || apiKey.isBlank() || cx == null || cx.isBlank()) return results;
+        if (!enabled)
+            return results;
+        if (apiKey == null || apiKey.isBlank() || cx == null || cx.isBlank())
+            return results;
 
         try {
             String q = URLEncoder.encode(query, StandardCharsets.UTF_8);
@@ -39,16 +41,17 @@ public class GoogleSearchService {
 
             ResponseEntity<Map> resp = restTemplate.getForEntity(url, Map.class);
             Map<String, Object> body = resp.getBody();
-            if (body == null) return results;
+            if (body == null)
+                return results;
 
             Object itemsObj = body.get("items");
             if (itemsObj instanceof List<?> items) {
                 for (Object it : items) {
                     if (it instanceof Map<?, ?> item) {
                         Object titleObj = item.get("title");
-                        Object linkObj  = item.get("link");
+                        Object linkObj = item.get("link");
                         String title = titleObj == null ? "" : titleObj.toString();
-                        String link  = linkObj  == null ? "" : linkObj.toString();
+                        String link = linkObj == null ? "" : linkObj.toString();
                         if (!title.isBlank() && !link.isBlank()) {
                             results.put(title, link);
                         }

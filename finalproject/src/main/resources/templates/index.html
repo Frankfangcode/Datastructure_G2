@@ -3,120 +3,532 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>DealVerse Search</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DealVerse - AI-Powered Price Comparison</title>
+
+    <!-- OpenAI-Inspired Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background: #f4f5fb;
+        /* ========== Design Tokens ========== */
+        :root {
+            --bg-dark: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-card: #1a1a1a;
+            --text-primary: #ececec;
+            --text-secondary: #a0a0a0;
+            --text-tertiary: #666666;
+            --accent-primary: #10a37f;
+            --accent-hover: #0d8c6c;
+            --border-color: #2a2a2a;
+            --orb-1: #10a37f;
+            --orb-2: #5436da;
+            --orb-3: #ff6b6b;
+            --orb-4: #feca57;
+            --orb-5: #48dbfb;
+        }
+
+        * {
             margin: 0;
-            padding: 40px;
+            padding: 0;
+            box-sizing: border-box;
         }
-        
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* ========== Gradient Orbs Background ========== */
+        .orbs-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--orb-1), transparent);
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, var(--orb-2), transparent);
+            top: 20%;
+            right: -80px;
+            animation-delay: 3s;
+        }
+
+        .orb-3 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, var(--orb-3), transparent);
+            bottom: 10%;
+            left: 15%;
+            animation-delay: 6s;
+        }
+
+        .orb-4 {
+            width: 280px;
+            height: 280px;
+            background: radial-gradient(circle, var(--orb-4), transparent);
+            bottom: -50px;
+            right: 20%;
+            animation-delay: 9s;
+        }
+
+        .orb-5 {
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, var(--orb-5), transparent);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: 12s;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            25% {
+                transform: translate(30px, -30px) scale(1.05);
+            }
+
+            50% {
+                transform: translate(-20px, 20px) scale(0.95);
+            }
+
+            75% {
+                transform: translate(40px, 10px) scale(1.02);
+            }
+        }
+
+        /* ========== Main Content ========== */
         .container {
-            max-width: 800px;
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
             margin: 0 auto;
-            background: white;
-            padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+            padding: 60px 24px;
         }
-        
+
+        /* ========== Header ========== */
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
         .logo {
-            font-size: 24px;
+            font-size: 32px;
             font-weight: 700;
-            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--orb-5));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        
+
+        .tagline {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        /* ========== Search Box ========== */
+        .search-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 32px;
+            backdrop-filter: blur(10px);
+        }
+
         .search-box {
             display: flex;
-            gap: 8px;
+            gap: 12px;
             margin-bottom: 24px;
         }
-        
+
         .search-box input {
             flex: 1;
-            padding: 10px 12px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            font-size: 16px;
+            padding: 14px 18px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.2s ease;
         }
-        
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            background: var(--bg-dark);
+        }
+
+        .search-box input::placeholder {
+            color: var(--text-tertiary);
+        }
+
         .search-box button {
-            padding: 10px 16px;
-            border-radius: 8px;
+            padding: 14px 28px;
+            background: var(--accent-primary);
             border: none;
-            background: #214D8C;
+            border-radius: 10px;
             color: white;
+            font-size: 15px;
+            font-weight: 600;
             cursor: pointer;
-            font-size: 16px;
+            transition: all 0.2s ease;
+            font-family: inherit;
         }
-        
+
         .search-box button:hover {
-            opacity: .9;
+            background: var(--accent-hover);
+            transform: translateY(-1px);
         }
-        
+
+        .search-box button:active {
+            transform: translateY(0);
+        }
+
+        /* ========== Platform Toggle Pills ========== */
+        .platform-section {
+            margin-bottom: 16px;
+        }
+
+        .platform-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .platform-pills {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .pill {
+            position: relative;
+        }
+
+        .pill input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .pill label {
+            display: inline-block;
+            padding: 10px 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .pill input:checked+label {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            color: white;
+        }
+
+        .pill label:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-1px);
+        }
+
+        /* ========== AI Recommendations ========== */
+        .recommendations-section {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .recommendations-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .recommendation-tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 8px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            color: var(--text-primary);
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .tag:hover {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        /* ========== Results Section ========== */
+        .results-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            backdrop-filter: blur(10px);
+        }
+
+        .results-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+
+        .optimized-query {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-primary);
+        }
+
         .result-item {
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.2s ease;
         }
-        
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-item:hover {
+            padding-left: 8px;
+        }
+
         .result-item a {
-            color: #214D8C;
+            color: var(--accent-primary);
             text-decoration: none;
             font-weight: 600;
+            font-size: 15px;
+            transition: color 0.2s ease;
         }
-        
+
+        .result-item a:hover {
+            color: var(--orb-5);
+        }
+
         .result-item small {
             display: block;
-            color: #888;
-            margin-top: 2px;
+            color: var(--text-tertiary);
+            margin-top: 6px;
+            font-size: 12px;
             word-break: break-all;
         }
-        
+
+        .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
         .error {
-            color: #c0392b;
-            margin-top: 12px;
+            padding: 16px;
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 10px;
+            color: #ff6b6b;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
+        /* ========== Responsive Design ========== */
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 20px;
+            }
+
+            .logo {
+                font-size: 28px;
+            }
+
+            .search-section {
+                padding: 24px;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            .search-box button {
+                width: 100%;
+            }
+
+            .platform-pills {
+                justify-content: center;
+            }
+
+            .results-section {
+                padding: 24px;
+            }
         }
     </style>
 </head>
 
 <body>
+    <!-- Gradient Orbs Background -->
+    <div class="orbs-container">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+        <div class="orb orb-5"></div>
+    </div>
+
+    <!-- Main Content -->
     <div class="container">
-        <div class="logo">DealVerse 比價搜尋</div>
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">DealVerse</div>
+            <div class="tagline">AI-Powered Multi-Platform Price Comparison</div>
+        </div>
 
-        <form id="searchForm" action="/search" method="get" class="search-box">
-            <input id="keywordInput" type="text" name="keyword" placeholder="輸入商品名稱，例如：iphone 17 pro" th:value="${keyword}">
-            <button type="submit">搜尋</button>
-        </form>
+        <!-- Search Section -->
+        <div class="search-section">
+            <form id="searchForm" action="/search" method="get">
+                <div class="search-box">
+                    <input id="keywordInput" type="text" name="keyword" placeholder="輸入商品名稱，例如：手機、藍牙耳機..."
+                        th:value="${keyword}" required>
+                    <button type="submit">搜尋</button>
+                </div>
 
-        <div th:if="${results != null}">
-            <!-- 沒有任何結果 -->
-            <div th:if="${#maps.isEmpty(results)}" style="margin-top: 12px; color: #777;">
-                沒有找到相關商品，請試試別的關鍵字或檢查後端設定。
+                <!-- Platform Selection -->
+                <div class="platform-section">
+                    <span class="platform-label">選擇平台</span>
+                    <div class="platform-pills">
+                        <div class="pill">
+                            <input type="checkbox" id="shopee" name="sources" value="Shopee"
+                                th:checked="${sources != null && sources.contains('Shopee')}">
+                            <label for="shopee">Shopee</label>
+                        </div>
+                        <div class="pill">
+                            <input type="checkbox" id="momo" name="sources" value="Momo"
+                                th:checked="${sources != null && sources.contains('Momo')}">
+                            <label for="momo">Momo</label>
+                        </div>
+                        <div class="pill">
+                            <input type="checkbox" id="pchome" name="sources" value="PChome"
+                                th:checked="${sources != null && sources.contains('PChome')}">
+                            <label for="pchome">PChome</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Recommendations (shown after search) -->
+                <div class="recommendations-section" th:if="${recommendations != null && !recommendations.isEmpty()}">
+                    <span class="recommendations-label">🤖 AI 推薦相關商品</span>
+                    <div class="recommendation-tags">
+                        <a th:each="rec : ${recommendations}" th:href="@{/search(keyword=${rec})}" th:text="${rec}"
+                            class="tag"></a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" th:if="${results != null}">
+            <div class="results-header">搜尋結果</div>
+
+            <!-- Show optimized query -->
+            <div class="optimized-query" th:if="${optimizedKeyword != null}">
+                <strong>AI 優化查詢:</strong> <span th:text="${optimizedKeyword}"></span>
             </div>
 
-            <!-- 有結果就列出來 -->
+            <!-- No results -->
+            <div th:if="${#maps.isEmpty(results)}" class="no-results">
+                沒有找到相關商品，請試試其他關鍵字或選擇不同平台。
+            </div>
+
+            <!-- Results list -->
             <div th:each="entry : ${results}" class="result-item">
                 <a th:href="${entry.value}" th:text="${entry.key}" target="_blank"></a>
                 <small th:text="${entry.value}"></small>
             </div>
         </div>
 
-        <!-- 錯誤訊息（例如 Google API call 失敗） -->
+        <!-- Error Message -->
         <div th:if="${error != null}" class="error" th:text="${error}"></div>
+    </div>
 
+    <script>
+        // Auto-submit on Enter key
+        const input = document.getElementById('keywordInput');
+        const form = document.getElementById('searchForm');
 
-        <script>
-            const input = document.getElementById('keywordInput');
-            const form = document.getElementById('searchForm');
-
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault(); // 避免重複 submit
-                    form.submit();
-                }
-            });
-        </script>
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                form.submit();
+            }
+        });
+    </script>
 </body>
 
 </html>
