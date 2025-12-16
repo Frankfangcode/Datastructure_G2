@@ -1,122 +1,210 @@
 <!doctype html>
 <html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+  <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>DealVerse Search</title>
 
-<head>
-    <meta charset="UTF-8" />
-    <title>DealVerse Search</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background: #f4f5fb;
-            margin: 0;
-            padding: 40px;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
-        }
-        
-        .logo {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 16px;
-        }
-        
-        .search-box {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 24px;
-        }
-        
-        .search-box input {
-            flex: 1;
-            padding: 10px 12px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            font-size: 16px;
-        }
-        
-        .search-box button {
-            padding: 10px 16px;
-            border-radius: 8px;
-            border: none;
-            background: #214D8C;
-            color: white;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        
-        .search-box button:hover {
-            opacity: .9;
-        }
-        
-        .result-item {
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .result-item a {
-            color: #214D8C;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        
-        .result-item small {
-            display: block;
-            color: #888;
-            margin-top: 2px;
-            word-break: break-all;
-        }
-        
-        .error {
-            color: #c0392b;
-            margin-top: 12px;
-        }
-    </style>
+  <style>
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:#fff;
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#111;
+    }
+
+    .page{
+      width:min(920px, 92vw);
+      text-align:center;
+    }
+
+    .logo{
+      font-size:42px;
+      font-weight:800;
+      letter-spacing:.2px;
+      margin-bottom:18px;
+    }
+    .logo span{ color:#214D8C; }
+
+    .search-form{
+      display:flex;
+      justify-content:center;
+      gap:10px;
+      margin-bottom:18px;
+    }
+
+    .search-input{
+      width:min(680px, 88vw);
+      display:flex;
+      align-items:center;
+      border:1px solid #dfe1e5;
+      border-radius:999px;
+      padding:12px 16px;
+      box-shadow:0 1px 6px rgba(32,33,36,.10);
+    }
+
+    .search-input input{
+      border:none;
+      outline:none;
+      font-size:18px;
+      width:100%;
+    }
+
+    .submit-btn{
+      border:none;
+      border-radius:999px;
+      padding:12px 18px;
+      background:#214D8C;
+      color:#fff;
+      font-size:16px;
+      cursor:pointer;
+    }
+
+    /* 圓圈按鈕 */
+    .site-pills{
+      display:flex;
+      justify-content:center;
+      gap:14px;
+      margin-top:6px;
+      margin-bottom:26px;
+    }
+
+    .site-pills input[type="radio"]{ display:none; }
+
+    .pill{
+      width:64px;
+      height:64px;
+      border-radius:999px;
+      border:1px solid #dfe1e5;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      font-weight:700;
+    }
+
+    #site_shopee:checked + label,
+    #site_momo:checked + label,
+    #site_pchome:checked + label{
+      border-color:#214D8C;
+    }
+
+    /* 結果區 */
+    .results{
+      width:min(820px, 92vw);
+      margin:0 auto;
+      text-align:left;
+      border-top:1px solid #eee;
+      padding-top:16px;
+    }
+
+    .result-item{
+      padding:12px 0;
+      border-bottom:1px solid #eee;
+    }
+
+    .result-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .result-title{
+      font-weight:700;
+      font-size:16px;
+      color:#111;
+    }
+
+    .link-btn{
+      white-space:nowrap;
+      padding:6px 14px;
+      border:1px solid #dfe1e5;
+      border-radius:999px;
+      text-decoration:none;
+      font-weight:700;
+      color:#214D8C;
+    }
+
+    .link-btn:hover{
+      background:#f4f6fb;
+    }
+
+    .muted{
+      color:#666;
+      margin-top:10px;
+    }
+
+    .error{
+      color:#c0392b;
+      margin-top:12px;
+      text-align:center;
+    }
+  </style>
 </head>
 
 <body>
-    <div class="container">
-        <div class="logo">DealVerse 比價搜尋</div>
+<div class="page">
+  <div class="logo">Deal<span>Verse</span></div>
 
-        <form id="searchForm" action="/search" method="get" class="search-box">
-            <input id="keywordInput" type="text" name="keyword" placeholder="輸入商品名稱，例如：iphone 17 pro" th:value="${keyword}">
-            <button type="submit">搜尋</button>
-        </form>
+  <form id="searchForm" action="/search" method="get">
+    <div class="search-form">
+      <div class="search-input">
+        <input id="keywordInput"
+               type="text"
+               name="keyword"
+               placeholder="輸入商品名稱，例如：iphone 17 pro"
+               th:value="${keyword}">
+      </div>
+      <button class="submit-btn" type="submit">搜尋</button>
+    </div>
 
-        <div th:if="${results != null}">
-            <!-- 沒有任何結果 -->
-            <div th:if="${#maps.isEmpty(results)}" style="margin-top: 12px; color: #777;">
-                沒有找到相關商品，請試試別的關鍵字或檢查後端設定。
-            </div>
+    <!-- 三個圓圈按鈕 -->
+    <div class="site-pills">
+      <input type="radio" id="site_shopee" name="site" value="shopee"
+             th:checked="${site == null or site == 'shopee'}">
+      <label class="pill" for="site_shopee">蝦</label>
 
-            <!-- 有結果就列出來 -->
-            <div th:each="entry : ${results}" class="result-item">
-                <a th:href="${entry.value}" th:text="${entry.key}" target="_blank"></a>
-                <small th:text="${entry.value}"></small>
-            </div>
-        </div>
+      <input type="radio" id="site_momo" name="site" value="momo"
+             th:checked="${site == 'momo'}">
+      <label class="pill" for="site_momo">momo</label>
 
-        <!-- 錯誤訊息（例如 Google API call 失敗） -->
-        <div th:if="${error != null}" class="error" th:text="${error}"></div>
+      <input type="radio" id="site_pchome" name="site" value="pchome"
+             th:checked="${site == 'pchome'}">
+      <label class="pill" for="site_pchome">PCh</label>
+    </div>
+  </form>
 
+  <!-- 結果 -->
+  <div class="results" th:if="${results != null}">
+    <div th:if="${#maps.isEmpty(results)}" class="muted">
+      沒有找到相關商品，請試試別的關鍵字。
+    </div>
 
-        <script>
-            const input = document.getElementById('keywordInput');
-            const form = document.getElementById('searchForm');
+    <div th:each="entry : ${results}" class="result-item">
+      <div class="result-row">
+        <div class="result-title" th:text="${entry.key}"></div>
+        <a class="link-btn" th:href="${entry.value}" target="_blank">連結</a>
+      </div>
+    </div>
+  </div>
 
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault(); // 避免重複 submit
-                    form.submit();
-                }
-            });
-        </script>
+  <div th:if="${error != null}" class="error" th:text="${error}"></div>
+</div>
+
+<script>
+  // 點站台自動送出
+  document.querySelectorAll('input[name="site"]').forEach(r => {
+    r.addEventListener('change', () => {
+      const kw = document.getElementById('keywordInput').value.trim();
+      if (kw.length > 0) document.getElementById('searchForm').submit();
+    });
+  });
+</script>
+
 </body>
-
 </html>

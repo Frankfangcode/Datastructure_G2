@@ -21,7 +21,20 @@ public class FetcherPool {
 
     public List<RawOffer> fetchAll(Query query) {
         List<RawOffer> all = new ArrayList<>();
+
+        // ✅ 讀取前端選的站台：shopee / momo / pchome（若為 null/空字串就表示不過濾）
+        String site = (query == null ? null : query.getSite());
+
         for (Connector c : connectors) {
+
+            // 若使用者有選 site，就只跑對應的 connector
+            if (site != null && !site.isBlank()) {
+                String source = c.getSourceName(); // 例如 "shopee" / "momo" / "pchome"
+                if (source == null || !source.equalsIgnoreCase(site)) {
+                    continue;
+                }
+            }
+
             try {
                 List<RawOffer> list = c.fetch(query);
                 if (list != null) {

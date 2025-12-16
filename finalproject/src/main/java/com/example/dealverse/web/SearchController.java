@@ -22,14 +22,20 @@ public class SearchController {
     }
 
     @GetMapping("/search")
-    public String search(@RequestParam("keyword") String keyword, Model model) {
+    public String search(@RequestParam("keyword") String keyword,
+                         @RequestParam(required = false, defaultValue = "shopee") String site,
+                         Model model) {
         try {
-            Map<String, String> results = dealVerseSearchService.searchTitleUrl(keyword);
+            // ✅ 這裡改成把 site 傳下去
+            Map<String, String> results = dealVerseSearchService.searchTitleUrl(keyword, site);
+
             model.addAttribute("keyword", keyword);
+            model.addAttribute("site", site);
             model.addAttribute("results", results);
             model.addAttribute("error", null);
         } catch (Exception e) {
             model.addAttribute("keyword", keyword);
+            model.addAttribute("site", site);
             model.addAttribute("results", null);
             model.addAttribute("error", e.getMessage());
         }

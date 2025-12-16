@@ -19,18 +19,31 @@ public class DealVerseSearchService {
         this.searchService = searchService;
     }
 
-    public Map<String, String> searchTitleUrl(String keyword) {
+    // ✅ 新增：支援指定站台
+    public Map<String, String> searchTitleUrl(String keyword, String site) {
         Query q = new Query(keyword);
+        q.setSite(site); // ✅ 把 site 帶進 Query，讓 FetcherPool 能過濾 connector
+
         List<Result> results = searchService.search(q, 10);
 
         Map<String, String> map = new LinkedHashMap<>();
         for (Result r : results) {
-            String title = r.getOffer().getSource() + " - " + r.getOffer().getBrand() + " " + r.getOffer().getModel();
-            if (title.trim().isEmpty()) {
+            // 先用 source + brand model（你現在的做法）
+            String title = r.getOffer().getSource() + " - " +
+                    (r.getOffer().getBrand() == null ? "" : r.getOffer().getBrand()) + " " +
+                    (r.getOffer().getModel() == null ? "" : r.getOffer().getModel());
+
+            if (title.trim().equals("-") || title.trim().isEmpty()) {
                 title = r.getOffer().getSource();
             }
+
             map.put(title + " | pay=" + r.getPay(), r.getOffer().getUrl());
         }
         return map;
+    }
+
+    // ✅ 舊方法保留：預設查 shopee（或你想改成 all 也行）
+    public Map<String, String> searchTitleUrl(String keyword) {
+        return searchTitleUrl(keyword, "shopee");
     }
 }
