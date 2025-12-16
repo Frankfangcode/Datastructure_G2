@@ -7,6 +7,7 @@ public class Offer {
     private String brand;
     private String model;
     private String variant;
+    private String title;
     private String attrsJson;
 
     // 用來比對的 key（brand|model|variant）
@@ -53,4 +54,8 @@ public class Offer {
 
     public String getSource() { return source; }
     public void setSource(String source) { this.source = source; }
+
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+
 }

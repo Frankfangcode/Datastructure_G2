@@ -21,6 +21,7 @@ public class Normalizer {
             o.setShippingFee(r.getShippingFee());
             o.setTimestamp(r.getTimestamp());
             o.setAttrsJson(r.getAttrsJson());
+            o.setTitle(r.getTitle());
 
             // 超簡單暴力示範：brand = 第一個字, model = 其他
             String title = r.getTitle() != null ? r.getTitle() : "";

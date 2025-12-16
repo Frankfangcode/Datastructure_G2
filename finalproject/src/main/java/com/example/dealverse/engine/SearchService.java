@@ -20,19 +20,22 @@ public class SearchService {
     private final RuleEngine ruleEngine;
     private final Scorer scorer;
     private final TopKRanker topKRanker;
+    private final GenericKeywordReranker genericKeywordReranker;
 
     public SearchService(FetcherPool fetcherPool,
-                         Normalizer normalizer,
-                         Matcher matcher,
-                         RuleEngine ruleEngine,
-                         Scorer scorer,
-                         TopKRanker topKRanker) {
+            Normalizer normalizer,
+            Matcher matcher,
+            RuleEngine ruleEngine,
+            Scorer scorer,
+            TopKRanker topKRanker,
+            GenericKeywordReranker genericKeywordReranker) {
         this.fetcherPool = fetcherPool;
         this.normalizer = normalizer;
         this.matcher = matcher;
         this.ruleEngine = ruleEngine;
         this.scorer = scorer;
         this.topKRanker = topKRanker;
+        this.genericKeywordReranker = genericKeywordReranker;
     }
 
     public List<Result> search(Query query, int topK) {
@@ -56,6 +59,7 @@ public class SearchService {
         }
 
         // 5. 排序 + TopK
-        return topKRanker.rank(allResults, topK);
+        List<Result> candidates = topKRanker.rank(allResults, Math.max(topK * 20, topK));
+        return genericKeywordReranker.rerank(query, candidates, topK);
     }
 }
