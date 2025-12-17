@@ -1,528 +1,498 @@
 <!doctype html>
 <html lang="zh-Hant" xmlns:th="http://www.thymeleaf.org">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>DealVerse Search</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DealVerse Search</title>
 
-  <!-- Typography: Outfit -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <style>
-    :root{
-      --bg:#FFFFFF;
-      --fg:#111827;
-      --primary:#3B82F6;
-      --secondary:#10B981;
-      --accent:#F59E0B;
-      --muted:#F3F4F6;
-      --border:#E5E7EB;
-      --r-md:6px;
-      --r-lg:8px;
-    }
-
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
-    body{
-      margin:0;
-      font-family:'Outfit', sans-serif;
-      background:var(--bg);
-      color:var(--fg);
-    }
-
-    /* Layout */
-    .wrap{
-      min-height:100%;
-      display:flex;
-      flex-direction:column;
-    }
-
-    /* HERO: bold color block */
-    .hero{
-      position:relative;
-      background:var(--primary);
-      color:#fff;
-      padding:48px 16px 28px;
-      overflow:hidden;
-    }
-    .container{
-      width:min(980px, 92vw);
-      margin:0 auto;
-    }
-
-    /* Background decoration (flat geometric) */
-    .shape{
-      position:absolute;
-      opacity:.10;
-      pointer-events:none;
-      background:#fff;
-    }
-    .shape.circle{
-      width:320px; height:320px; border-radius:999px;
-      top:-120px; right:-120px;
-    }
-    .shape.square{
-      width:220px; height:220px;
-      bottom:-90px; left:-70px;
-      transform:rotate(18deg);
-    }
-    .shape.ring{
-      width:280px; height:280px; border-radius:999px;
-      border:10px solid rgba(255,255,255,.22);
-      background:transparent;
-      top:30px; left:20%;
-    }
-
-    .brand{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:16px;
-      flex-wrap:wrap;
-    }
-    .logo{
-      font-weight:800;
-      letter-spacing:-0.02em;
-      font-size:40px;
-      line-height:1;
-    }
-    .tagline{
-      font-weight:500;
-      opacity:.95;
-      letter-spacing:.02em;
-    }
-
-    /* SEARCH PANEL (flat card) */
-    .panel{
-      background:var(--muted);
-      padding:18px 16px 22px;
-    }
-
-    .search-row{
-      display:grid;
-      grid-template-columns: 1fr auto;
-      gap:12px;
-      align-items:center;
-    }
-
-    .input{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      background:#fff;
-      border-radius:var(--r-lg);
-      padding:14px 14px;
-      border:2px solid transparent; /* focus will set primary border */
-    }
-    .input:focus-within{
-      border-color:var(--primary);
-    }
-    .input input{
-      width:100%;
-      border:none;
-      outline:none;
-      font-size:18px;
-      font-weight:500;
-      color:var(--fg);
-      background:transparent;
-    }
-    .input input::placeholder{
-      color:#6B7280;
-      font-weight:500;
-    }
-
-    .btn-primary{
-      height:56px;
-      padding:0 18px;
-      border:none;
-      border-radius:var(--r-lg);
-      background:var(--primary);
-      color:#fff;
-      font-weight:700;
-      letter-spacing:.02em;
-      cursor:pointer;
-      transition:transform .2s ease, background-color .2s ease;
-    }
-    .btn-primary:hover{ background:#2563EB; transform:scale(1.05); }
-    .btn-primary:focus{ outline:2px solid #fff; outline-offset:2px; }
-
-    /* 修改後的 Site toggles 區塊 */
-    .sites {
-      margin-top: 24px;
-      display: flex;
-      justify-content: center;
-      gap: 20px; /* 增加按鈕之間的間距 */
-      flex-wrap: wrap;
-    }
-
-    .site {
-      /* 取消原版的固定寬高，改為垂直排列 */
-      display: flex;
-      flex-direction: column; 
-      align-items: center;
-      gap: 8px; /* 圓圈與文字的距離 */
-      cursor: pointer;
-      user-select: none;
-      transition: transform 0.2s ease;
-      /* 移除原版的背景與圓角設定，因為要移到 .icon-circle */
-    }
-
-    .site:hover {
-      transform: translateY(-4px); /* 懸停時稍微往上飄，更有動感 */
-    }
-
-/* 新增：專門放 Logo 的圓框 */
-    .icon-circle {
-      width: 64px; /* 維持你喜歡的 64px 大小 */
-      height: 64px;
-      border-radius: 999px;
-      background: #fff;
-      border: 2px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      padding: 10px; /* 讓圖片不要碰到邊緣 */
-      transition: all 0.2s ease;
-    }
-
-    .icon-circle img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain; /* 確保 Logo 比例不變形 */
-    }
-
-/* 新增：圓圈下方的文字標籤 */
-    .site-label {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--fg);
-      letter-spacing: .02em;
-    }
-
-/* 修改後的 Active 狀態：控制內部的圓圈和文字 */
-    .site.active .icon-circle {
-      background: var(--fg); /* 選中時圓圈變深色（或根據你喜好調整） */
-      border-color: var(--fg);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    .site.active .icon-circle img {
-      filter: brightness(0) invert(1); /* 如果是深色背景，強制讓 Logo 變白色（選用） */
-    }
-
-    .site.active .site-label {
-      color: var(--primary); /* 選中時文字顏色改變 */
-    }
-
-    /* Results section (flat blocks) */
-    .results{
-      padding:22px 16px 48px;
-      background:#fff;
-    }
-
-    .results-head{
-      display:flex;
-      align-items:baseline;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-bottom:14px;
-    }
-
-    .results-title{
-      font-size:18px;
-      font-weight:800;
-      letter-spacing:-0.02em;
-    }
-
-    .results-meta{
-      font-size:14px;
-      font-weight:600;
-      color:#374151;
-      letter-spacing:.02em;
-    }
-
-    .list{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-
-    .item{
-      border-radius:var(--r-lg);
-      background:var(--muted);
-      padding:14px 14px;
-      transition:transform .2s ease, background-color .2s ease;
-    }
-    .item:hover{ transform:scale(1.02); background:#E5E7EB; }
-
-    .row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-    }
-
-    .title{
-      font-weight:700;
-      letter-spacing:-0.01em;
-      line-height:1.2;
-      word-break:break-word;
-    }
-
-    .link{
-      flex:0 0 auto;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      height:44px;
-      padding:0 14px;
-      border-radius:var(--r-md);
-      background:var(--fg);
-      color:#fff;
-      text-decoration:none;
-      font-weight:800;
-      letter-spacing:.06em;
-      transition:transform .2s ease, background-color .2s ease;
-    }
-    .link:hover{ background:#0B1220; transform:scale(1.05); }
-    .link:focus{ outline:2px solid var(--primary); outline-offset:2px; }
-
-    .muted-text{
-      margin-top:12px;
-      color:#374151;
-      font-weight:600;
-    }
-
-    .error{
-      margin-top:14px;
-      background: #FEF2F2;
-      color:#991B1B;
-      border-radius:var(--r-lg);
-      padding:12px 14px;
-      font-weight:700;
-    }
-    .hero-categories {
-      margin-top: 32px;
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .cat-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(255, 255, 255, 0.15); /* 半透明白色 */
-      backdrop-filter: blur(4px);
-      padding: 8px 16px;
-      border-radius: 999px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .cat-item:hover {
-      background: rgba(255, 255, 255, 0.3);
-      transform: translateY(-2px);
-    }
-
-    .cat-icon {
-      font-size: 18px;
-    }
-
-    .cat-item span {
-      font-weight: 600;
-      font-size: 14px;
-      color: #fff;
-    }
-
-    /* 行動端微調 */
-    @media (max-width: 640px) {
-      .hero-categories {
-        gap: 10px;
-        margin-top: 24px;
-      }
-      .cat-item {
-        padding: 6px 12px;
-      }
-    } 
-
-    /* Responsive */
-    @media (max-width: 640px){
-      .logo{ font-size:34px; }
-      .search-row{ grid-template-columns:1fr; }
-      .btn-primary{ width:100%; }
-      .row{ align-items:flex-start; }
-      .link{ height:42px; }
-    }
-  </style>
+    <style>
+         :root {
+            --bg: #FFFFFF;
+            --fg: #111827;
+            --primary: #3B82F6;
+            --muted: #F3F4F6;
+            --border: #E5E7EB;
+            --r-md: 6px;
+            --r-lg: 8px;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        html,
+        body {
+            height: 100%;
+        }
+        
+        body {
+            margin: 0;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+        }
+        
+        .wrap {
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .hero {
+            position: relative;
+            background: var(--primary);
+            color: #fff;
+            padding: 48px 16px 28px;
+            overflow: hidden;
+        }
+        
+        .container {
+            width: min(980px, 92vw);
+            margin: 0 auto;
+        }
+        
+        .shape {
+            position: absolute;
+            opacity: .10;
+            pointer-events: none;
+            background: #fff;
+        }
+        
+        .shape.circle {
+            width: 320px;
+            height: 320px;
+            border-radius: 999px;
+            top: -120px;
+            right: -120px;
+        }
+        
+        .shape.square {
+            width: 220px;
+            height: 220px;
+            bottom: -90px;
+            left: -70px;
+            transform: rotate(18deg);
+        }
+        
+        .shape.ring {
+            width: 280px;
+            height: 280px;
+            border-radius: 999px;
+            border: 10px solid rgba(255, 255, 255, .22);
+            background: transparent;
+            top: 30px;
+            left: 20%;
+        }
+        
+        .brand {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .logo {
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            font-size: 40px;
+            line-height: 1;
+        }
+        
+        .tagline {
+            font-weight: 500;
+            opacity: .95;
+            letter-spacing: .02em;
+        }
+        
+        .panel {
+            background: var(--muted);
+            padding: 18px 16px 22px;
+        }
+        
+        .search-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #fff;
+            border-radius: var(--r-lg);
+            padding: 14px 14px;
+            border: 2px solid transparent;
+        }
+        
+        .input:focus-within {
+            border-color: var(--primary);
+        }
+        
+        .input input {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--fg);
+            background: transparent;
+        }
+        
+        .input input::placeholder {
+            color: #6B7280;
+            font-weight: 500;
+        }
+        
+        .btn-primary {
+            height: 56px;
+            padding: 0 18px;
+            border: none;
+            border-radius: var(--r-lg);
+            background: var(--primary);
+            color: #fff;
+            font-weight: 700;
+            letter-spacing: .02em;
+            cursor: pointer;
+            transition: transform .2s ease, background-color .2s ease;
+        }
+        
+        .btn-primary:hover {
+            background: #2563EB;
+            transform: scale(1.05);
+        }
+        
+        .btn-primary:focus {
+            outline: 2px solid #fff;
+            outline-offset: 2px;
+        }
+        
+        .sites {
+            margin-top: 24px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .site {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.2s ease;
+        }
+        
+        .site:hover {
+            transform: translateY(-4px);
+        }
+        
+        .icon-circle {
+            width: 64px;
+            height: 64px;
+            border-radius: 999px;
+            background: #fff;
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 10px;
+            transition: all .2s ease;
+        }
+        
+        .icon-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .site-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--fg);
+            letter-spacing: .02em;
+        }
+        
+        .site.active .icon-circle {
+            background: var(--fg);
+            border-color: var(--fg);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .site.active .icon-circle img {
+            filter: brightness(0) invert(1);
+        }
+        
+        .site.active .site-label {
+            color: var(--primary);
+        }
+        /* 隱藏 checkbox，但保留可提交 */
+        
+        .site input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .results {
+            padding: 22px 16px 48px;
+            background: #fff;
+        }
+        
+        .results-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+        
+        .results-title {
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+        
+        .results-meta {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            letter-spacing: .02em;
+        }
+        
+        .list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .item {
+            border-radius: var(--r-lg);
+            background: var(--muted);
+            padding: 14px 14px;
+            transition: transform .2s ease, background-color .2s ease;
+        }
+        
+        .item:hover {
+            transform: scale(1.02);
+            background: #E5E7EB;
+        }
+        
+        .row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        
+        .title {
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+        
+        .link {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 44px;
+            padding: 0 14px;
+            border-radius: var(--r-md);
+            background: var(--fg);
+            color: #fff;
+            text-decoration: none;
+            font-weight: 800;
+            letter-spacing: .06em;
+            transition: transform .2s ease, background-color .2s ease;
+        }
+        
+        .link:hover {
+            background: #0B1220;
+            transform: scale(1.05);
+        }
+        
+        .link:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+        
+        .muted-text {
+            margin-top: 12px;
+            color: #374151;
+            font-weight: 600;
+        }
+        
+        .error {
+            margin-top: 14px;
+            background: #FEF2F2;
+            color: #991B1B;
+            border-radius: var(--r-lg);
+            padding: 12px 14px;
+            font-weight: 700;
+        }
+        
+        @media (max-width: 640px) {
+            .logo {
+                font-size: 34px;
+            }
+            .search-row {
+                grid-template-columns: 1fr;
+            }
+            .btn-primary {
+                width: 100%;
+            }
+            .row {
+                align-items: flex-start;
+            }
+            .link {
+                height: 42px;
+            }
+        }
+    </style>
 </head>
 
 <body>
-<div class="wrap">
-  <!-- HERO -->
-  <section class="hero">
-    <div class="shape circle"></div>
-    <div class="shape square"></div>
-    <div class="shape ring"></div>
+    <div class="wrap">
 
-    <div class="container">
-      <div class="brand">
-        <div class="logo">DealVerse</div>
-        <div class="tagline">Flat, fast, focused goods search.</div>
-      </div>
-      <div class="hero-categories">
-        <div class="cat-item" onclick="quickSearch('cellphone')">
-          <div class="cat-icon">📱</div>
-          <span>手機</span>
-        </div>
-        <div class="cat-item" onclick="quickSearch('laptop')">
-          <div class="cat-icon">💻</div>
-          <span>筆電</span>
-        </div>
-        <div class="cat-item" onclick="quickSearch('camera')">
-          <div class="cat-icon">📷</div>
-          <span>相機</span>
-        </div>
-        <div class="cat-item" onclick="quickSearch('headphones')">
-          <div class="cat-icon">🎧</div>
-          <span>耳機</span>
-        </div>
-        <div class="cat-item" onclick="quickSearch('smartwatch')">
-          <div class="cat-icon">⌚</div>
-          <span>智慧手錶</span>
-        </div>
-      </div>
+        <!-- HERO -->
+        <section class="hero">
+            <div class="shape circle"></div>
+            <div class="shape square"></div>
+            <div class="shape ring"></div>
+
+            <div class="container">
+                <div class="brand">
+                    <div class="logo">DealVerse</div>
+                    <div class="tagline">Flat, fast, focused goods search.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEARCH PANEL -->
+        <section class="panel">
+            <div class="container">
+                <form id="searchForm" action="/search" method="get" novalidate>
+                    <div class="search-row">
+                        <div class="input">
+                            <input id="keywordInput" type="text" name="keyword" placeholder="輸入商品名稱，例如：iphone 17 pro" th:value="${keyword}">
+                        </div>
+                        <button class="btn-primary" type="submit">搜尋</button>
+                    </div>
+
+                    <!-- ✅ 多選 sources（checkbox），保留你現有 icon UI -->
+                    <div class="sites" aria-label="選擇購物網站（可多選）">
+
+                        <label class="site" data-site="Shopee" th:classappend="${sources != null && sources.contains('Shopee')} ? ' active' : ''">
+            <input type="checkbox" name="sources" value="Shopee"
+                   th:checked="${sources != null && sources.contains('Shopee')}">
+            <div class="icon-circle">
+              <img src="/images/shopeeLogo.png" alt="蝦皮">
+            </div>
+            <div class="site-label">蝦皮購物</div>
+          </label>
+
+                        <label class="site" data-site="Momo" th:classappend="${sources != null && sources.contains('Momo')} ? ' active' : ''">
+            <input type="checkbox" name="sources" value="Momo"
+                   th:checked="${sources != null && sources.contains('Momo')}">
+            <div class="icon-circle">
+              <img src="/images/momoLogo.jpg" alt="momo">
+            </div>
+            <div class="site-label">momo</div>
+          </label>
+
+                        <label class="site" data-site="PChome" th:classappend="${sources != null && sources.contains('PChome')} ? ' active' : ''">
+            <input type="checkbox" name="sources" value="PChome"
+                   th:checked="${sources != null && sources.contains('PChome')}">
+            <div class="icon-circle">
+              <img src="/images/pcHomeLogo.png" alt="PChome">
+            </div>
+            <div class="site-label">PChome</div>
+          </label>
+
+                        <label class="site" data-site="Amazon" th:classappend="${sources != null && sources.contains('Amazon')} ? ' active' : ''">
+            <input type="checkbox" name="sources" value="Amazon"
+                   th:checked="${sources != null && sources.contains('Amazon')}">
+            <div class="icon-circle">
+              <img src="/images/amazon-logo.png" alt="Amazon">
+            </div>
+            <div class="site-label">Amazon</div>
+          </label>
+
+                    </div>
+                </form>
+
+                <div th:if="${error != null}" class="error" th:text="${error}"></div>
+            </div>
+        </section>
+
+        <!-- RESULTS -->
+        <section class="results" th:if="${results != null}">
+            <div class="container">
+                <div class="results-head">
+                    <div class="results-title">搜尋結果</div>
+                    <!-- 你 Controller 目前 site 可能是 join 後的字串（debug 用） -->
+                    <div class="results-meta" th:text="${(site == null or site == '') ? '全部網站' : ('顯示：' + site)}"></div>
+                </div>
+
+                <div th:if="${#maps.isEmpty(results)}" class="muted-text">
+                    沒有找到相關商品，請試試別的關鍵字。
+                </div>
+
+                <div class="list" th:if="${!#maps.isEmpty(results)}">
+                    <div th:each="entry : ${results}" class="item">
+                        <div class="row">
+                            <div class="title" th:text="${entry.key}"></div>
+                            <a class="link" th:href="${entry.value}" target="_blank" rel="noopener noreferrer">連結</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </div>
-  </section>
 
-  <!-- SEARCH PANEL -->
-<section class="panel">
-  <div class="container">
-    <form id="searchForm" action="/search" method="get" novalidate>
-      <div class="search-row">
-        <div class="input">
-          <input id="keywordInput"
-                 type="text"
-                 name="keyword"
-                 placeholder="輸入商品名稱，例如：iphone 17 pro"
-                 th:value="${keyword}">
-        </div>
-        <button class="btn-primary" type="submit">搜尋</button>
-      </div>
+    <script>
+        const form = document.getElementById('searchForm');
+        const kwInput = document.getElementById('keywordInput');
 
-      <input type="hidden" id="siteHidden" name="site" th:value="${site}">
+        // Enter 送出
+        kwInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                form.submit();
+            }
+        });
 
-      <div class="sites" aria-label="選擇購物網站">
-        <div class="site" data-site="shopee" role="button" tabindex="0">
-          <div class="icon-circle">
-            <img src="/images/shopeeLogo.png" alt="蝦皮">
-          </div>
-          <div class="site-label">蝦皮購物</div>
-        </div>
+        // 點選 site tile：切換 checkbox + 切 active 樣式
+        document.querySelectorAll('.site').forEach(label => {
+            label.addEventListener('click', (e) => {
+                // label 包 checkbox，瀏覽器會自動切換 checked
+                // 我們延遲到下一個 tick 再讀 checked 狀態來同步 class
+                setTimeout(() => {
+                    const cb = label.querySelector('input[type="checkbox"]');
+                    label.classList.toggle('active', cb.checked);
 
-        <div class="site" data-site="momo" role="button" tabindex="0">
-          <div class="icon-circle">
-            <img src="/images/momoLogo.jpg" alt="momo">
-          </div>
-          <div class="site-label">momo</div>
-        </div>
-
-        <div class="site" data-site="pchome" role="button" tabindex="0">
-          <div class="icon-circle">
-            <img src="/images/pcHomeLogo.png" alt="PCh">
-          </div>
-          <div class="site-label">PChome</div>
-        </div>
-      </div>
-    </form>
-
-    <div th:if="${error != null}" class="error" th:text="${error}"></div>
-  </div>
-</section>
-
-  <!-- RESULTS -->
-  <section class="results" th:if="${results != null}">
-    <div class="container">
-      <div class="results-head">
-        <div class="results-title">搜尋結果</div>
-        <div class="results-meta" th:text="${(site == null or site == '') ? '全部網站' : ('只顯示：' + site)}"></div>
-      </div>
-
-      <div th:if="${#maps.isEmpty(results)}" class="muted-text">
-        沒有找到相關商品，請試試別的關鍵字。
-      </div>
-
-      <div class="list" th:if="${!#maps.isEmpty(results)}">
-        <div th:each="entry : ${results}" class="item">
-          <div class="row">
-            <div class="title" th:text="${entry.key}"></div>
-            <a class="link" th:href="${entry.value}" target="_blank" rel="noopener noreferrer">連結</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-</div>
-
-<script>
-  // 功能不變：點一次單站、再點一次同站回到全部（site=""）
-  const form = document.getElementById('searchForm');
-  const kwInput = document.getElementById('keywordInput');
-  const siteHidden = document.getElementById('siteHidden');
-
-  let current = (siteHidden.value || "").trim(); // "shopee"/"momo"/"pchome" or ""
-
-  function submitIfKeyword(){
-    const kw = kwInput.value.trim();
-    if (kw.length > 0) form.submit();
-  }
-
-  function syncUI(){
-    siteHidden.value = current;
-
-    document.querySelectorAll('.site').forEach(el => {
-      const s = el.dataset.site;
-      const active = (s === current);
-      el.classList.toggle('active', active);
-      el.setAttribute('aria-pressed', active ? 'true' : 'false');
-    });
-  }
-
-  function toggleSite(next){
-    if (current === next) current = ""; // same -> back to all
-    else current = next;
-    syncUI();
-    submitIfKeyword();
-  }
-
-  // Click
-  document.querySelectorAll('.site').forEach(el => {
-    el.addEventListener('click', () => toggleSite(el.dataset.site));
-    // Keyboard accessibility: Enter / Space
-    el.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggleSite(el.dataset.site);
-      }
-    });
-  });
-
-  // Init
-  syncUI();
-  function quickSearch(keyword) {
-    const kwInput = document.getElementById('keywordInput');
-    const form = document.getElementById('searchForm');
-    // 填入關鍵字
-    kwInput.value = keyword;
-    // 觸發搜尋
-    form.submit();
-  }
-</script>
+                    // 你原本想「點了就搜」：有輸入關鍵字才自動送出
+                    const kw = kwInput.value.trim();
+                    if (kw.length > 0) form.submit();
+                }, 0);
+            });
+        });
+    </script>
 
 </body>
+
 </html>

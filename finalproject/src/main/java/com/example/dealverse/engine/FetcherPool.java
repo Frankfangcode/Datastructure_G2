@@ -12,38 +12,41 @@ import com.example.dealverse.model.RawOffer;
 @Component
 public class FetcherPool {
 
-    private final List<Connector> connectors = new ArrayList<>();
+    private final List<Connector> connectors;
 
     public FetcherPool(List<Connector> connectors) {
-        // Spring 會自動注入所有實作 Connector 並放進來
-        this.connectors.addAll(connectors);
+        this.connectors = connectors;
     }
 
-    public List<RawOffer> fetchAll(Query query) {
-        List<RawOffer> all = new ArrayList<>();
+    public List<RawOffer> fetch(Query query) {
+        // ✅ 一定要先宣告 results，不然就會你看到的那個錯
+        List<RawOffer> results = new ArrayList<>();
 
-        // ✅ 讀取前端選的站台：shopee / momo / pchome（若為 null/空字串就表示不過濾）
-        String site = (query == null ? null : query.getSite());
+        if (query == null) return results;
 
         for (Connector c : connectors) {
+            String source = c.getSourceName(); // e.g. "shopee","momo","pchome","amazon"
 
-            // 若使用者有選 site，就只跑對應的 connector
-            if (site != null && !site.isBlank()) {
-                String source = c.getSourceName(); // 例如 "shopee" / "momo" / "pchome"
-                if (source == null || !source.equalsIgnoreCase(site)) {
-                    continue;
-                }
+            // ✅ 多站：用 Query.allowSource 決定要不要跑這個 connector
+            if (!query.allowSource(source)) {
+                continue;
             }
 
             try {
-                List<RawOffer> list = c.fetch(query);
-                if (list != null) {
-                    all.addAll(list);
+                List<RawOffer> part = c.fetch(query);
+                if (part != null && !part.isEmpty()) {
+                    results.addAll(part);
                 }
             } catch (Exception e) {
-                System.err.println("Connector failed: " + c.getSourceName() + " - " + e.getMessage());
+                // 建議不要讓單一 connector 失敗拖垮全部
+                System.out.println("[FetcherPool] " + source + " failed: " + e.getMessage());
             }
         }
-        return all;
+
+        return results;
     }
+    public List<RawOffer> fetchAll(Query query) {
+    return fetch(query); // 如果你已有 fetch(Query)
+}
+
 }

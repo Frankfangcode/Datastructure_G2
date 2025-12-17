@@ -26,38 +26,44 @@ public class SearchController {
 
     @GetMapping("/search")
     public String search(@RequestParam("keyword") String keyword,
-            // 你的新版 UI 用的是 sources（checkbox）
-            @RequestParam(required = false) List<String> sources,
-            // 你舊版可能有 site；保留但不強依賴
-            @RequestParam(required = false, defaultValue = "") String site,
-            Model model) {
+                         // checkbox: sources=Shopee&sources=Momo...
+                         @RequestParam(required = false) List<String> sources,
+                         // 舊參數相容：?site=shopee
+                         @RequestParam(required = false, defaultValue = "") String site,
+                         Model model) {
 
         try {
-            // 1) 若 sources 沒勾，預設全平台
+            // 1) UI 沒勾 → 預設全平台（含 Amazon）
             if (sources == null || sources.isEmpty()) {
-                sources = List.of("Shopee", "Momo", "PChome");
+                sources = List.of("Shopee", "Momo", "PChome", "Amazon");
             }
 
-            // 2) 決定要傳給後端的 site（你目前 Query 是 setSite(site) 來過濾）
-            //    目前先用「只支援單一站台」的方式：優先用 sources 第一個
-            //    （若你要支援多站台並行搜尋，需要改 Query/FetcherPool 支援 list）
-            String chosenSite = normalizeSite(site, sources);
+            // 2) 若 site 有值：覆蓋 sources，代表只查單站（相容舊用法）
+            if (site != null && !site.isBlank()) {
+                String only = normalizeSiteToSource(site);
+                if (!only.isBlank()) {
+                    sources = toUiSourceLabelList(only); // 給 UI 回填用
+                }
+            }
 
-            // 3) 走新版：AI 翻譯 + 推薦 + 搜尋
-            SearchResponse resp
-                    = dealVerseSearchService.searchWithAi(keyword, chosenSite, 10);
+            // 3) 轉成後端可用的 sources（小寫，對應 connector.getSourceName()）
+            List<String> normalizedSources = normalizeSources(sources);
 
-            // 4) 塞進前端需要的資料
+            // 4) 呼叫新版（多站）：AI 翻譯 + 推薦 + 多站搜尋
+            //    你需要讓 DealVerseSearchService.searchWithAi(...) 接 List<String>
+            SearchResponse resp = dealVerseSearchService.searchWithAi(keyword, normalizedSources, 10);
+
+            // 5) 丟給 Thymeleaf
             model.addAttribute("keyword", resp.getOriginalKeyword());
             model.addAttribute("optimizedKeyword", resp.getOptimizedKeyword());
             model.addAttribute("recommendations", resp.getRecommendations());
             model.addAttribute("results", resp.getResults());
 
-            // 5) checkbox 勾選狀態要回填（你 HTML 用 sources.contains('Shopee')）
+            // checkbox 回填（保持 UI 原本用的大寫格式：Shopee/Momo/PChome/Amazon）
             model.addAttribute("sources", sources);
 
-            // 若你頁面還有用 site（舊版）也給它
-            model.addAttribute("site", chosenSite);
+            // 若你頁面還有用 site（可留著 debug）
+            model.addAttribute("site", String.join(",", normalizedSources));
 
             model.addAttribute("error", null);
         } catch (Exception e) {
@@ -75,33 +81,52 @@ public class SearchController {
         return "index";
     }
 
+    // -------------------------
+    // helpers
+    // -------------------------
+
     /**
-     * 將 UI 的 sources / site 統一成 Query 目前能吃的單一站台字串。 你現在的引擎是 q.setSite(site)（通常期望
-     * "shopee"/"momo"/"pchome"）
+     * 把 UI sources（Shopee/Momo/PChome/Amazon）轉成後端 sources（shopee/momo/pchome/amazon）
      */
-    private String normalizeSite(String site, List<String> sources) {
-        // 1) 若 query string 有傳 site，優先使用
-        if (site != null && !site.isBlank()) {
-            return site.trim().toLowerCase();
+    private List<String> normalizeSources(List<String> sources) {
+        List<String> out = new ArrayList<>();
+        for (String s : sources) {
+            if (s == null) continue;
+            String v = s.trim().toLowerCase();
+            if (v.contains("shopee")) out.add("shopee");
+            else if (v.contains("momo")) out.add("momo");
+            else if (v.contains("pchome")) out.add("pchome");
+            else if (v.contains("amazon")) out.add("amazon");
         }
+        // 若轉完反而空，當作全開
+        if (out.isEmpty()) {
+            return List.of("shopee", "momo", "pchome", "amazon");
+        }
+        return out;
+    }
 
-        // 2) 否則用 sources 第一個當作 chosenSite
-        //    UI 的 value 是 "Shopee"/"Momo"/"PChome"
-        String first = sources.get(0);
-        String s = first.trim().toLowerCase();
-
-        // 對應你 connector 內部可能用的名稱
-        if (s.contains("shopee")) {
-            return "shopee";
-        }
-        if (s.contains("momo")) {
-            return "momo";
-        }
-        if (s.contains("pchome")) {
-            return "pchome";
-        }
-
-        // fallback：不過濾（視你的 FetcherPool 實作）
+    /**
+     * 相容舊參數 ?site=shopee/momo/pchome/amazon
+     */
+    private String normalizeSiteToSource(String site) {
+        String s = site.trim().toLowerCase();
+        if (s.contains("shopee")) return "shopee";
+        if (s.contains("momo")) return "momo";
+        if (s.contains("pchome")) return "pchome";
+        if (s.contains("amazon")) return "amazon";
         return "";
+    }
+
+    /**
+     * 用於「site 覆蓋 sources」時，把單一 source 轉成 UI label，讓 checkbox 回填正常
+     */
+    private List<String> toUiSourceLabelList(String source) {
+        return switch (source) {
+            case "shopee" -> List.of("Shopee");
+            case "momo" -> List.of("Momo");
+            case "pchome" -> List.of("PChome");
+            case "amazon" -> List.of("Amazon");
+            default -> List.of("Shopee", "Momo", "PChome", "Amazon");
+        };
     }
 }

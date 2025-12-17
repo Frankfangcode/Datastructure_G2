@@ -16,7 +16,6 @@ import com.example.dealverse.model.Result;
 import com.example.dealverse.model.SearchResponse;
 import com.example.dealverse.service.OpenAiService;
 
-
 @Service
 public class DealVerseSearchService {
 
@@ -37,16 +36,18 @@ public class DealVerseSearchService {
     }
 
     // =========================
-    // 新增：給新版 UI 用的回傳格式
+    // 新版：多來源（sources）+ AI 翻譯/推薦
     // =========================
-    public SearchResponse searchWithAi(String keyword, String site, int topK) {
+    public SearchResponse searchWithAi(String keyword, List<String> sources, int topK) {
         String originalKeyword = keyword == null ? "" : keyword.trim();
 
         // 1) AI 優化查詢（翻譯）
         String optimizedKeyword = originalKeyword;
         if (openAiEnabled && !originalKeyword.isBlank()) {
             String refined = openAiService.refineQuery(originalKeyword);
-            if (refined != null && !refined.isBlank()) optimizedKeyword = refined.trim();
+            if (refined != null && !refined.isBlank()) {
+                optimizedKeyword = refined.trim();
+            }
         }
 
         // 2) AI 推薦相關商品（可選）
@@ -56,55 +57,85 @@ public class DealVerseSearchService {
             recommendations = parseRecommendations(recCsv, 5);
         }
 
-        // 3) 用 optimizedKeyword 去跑你的搜尋引擎
-        Map<String, String> resultsMap = searchTitleUrlInternal(optimizedKeyword, site, topK);
+        // 3) 用 optimizedKeyword + sources 跑搜尋引擎（多站）
+        Map<String, String> resultsMap = searchTitleUrlInternalBySources(optimizedKeyword, sources, topK);
 
-        // 4) 回傳（給 Controller 丟進 model）
-        return new SearchResponse(originalKeyword, optimizedKeyword, recommendations, resultsMap, site);
+        // 4) site 欄位：你現在是多站，這裡用 join 方便 debug/顯示
+        String siteLabel = sources == null ? "" : String.join(",", sources);
+
+        return new SearchResponse(originalKeyword, optimizedKeyword, recommendations, resultsMap, siteLabel);
     }
 
     // =========================
-    // 舊介面保留（不改 controller 也能跑）
+    // 舊介面保留：單站（site）搜尋，不用動舊程式也能跑
     // =========================
-
-    // ✅ 新增：支援指定站台（你原本就有）
     public Map<String, String> searchTitleUrl(String keyword, String site) {
-        return searchTitleUrlInternal(keyword, site, 10);
+        return searchTitleUrlInternalBySite(keyword, site, 10);
     }
 
-    // ✅ 舊方法保留：預設查 shopee（或你想改成 all 也行）
     public Map<String, String> searchTitleUrl(String keyword) {
         return searchTitleUrl(keyword, "shopee");
     }
 
     // =========================
-    // Internal helpers
+    // Internal helpers (多站版)
     // =========================
-
-    private Map<String, String> searchTitleUrlInternal(String keyword, String site, int topK) {
+    private Map<String, String> searchTitleUrlInternalBySources(String keyword, List<String> sources, int topK) {
         Query q = new Query(keyword);
-        q.setSite(site); // ✅ 把 site 帶進 Query，讓 FetcherPool 能過濾 connector
+
+        // ✅ 多站：用 sources（Query 需已新增 setSources / allowSource）
+        if (sources != null) {
+            // 統一小寫，避免 connector.getSourceName() 對不上
+            List<String> normalized = sources.stream()
+                    .filter(s -> s != null && !s.isBlank())
+                    .map(s -> s.trim().toLowerCase())
+                    .distinct()
+                    .collect(Collectors.toList());
+            q.setSources(normalized);
+        }
 
         List<Result> results = searchService.search(q, topK);
+        return toTitleUrlMap(results);
+    }
 
+    // =========================
+    // Internal helpers (單站相容版)
+    // =========================
+    private Map<String, String> searchTitleUrlInternalBySite(String keyword, String site, int topK) {
+        Query q = new Query(keyword);
+
+        if (site != null && !site.isBlank()) {
+            q.setSite(site.trim().toLowerCase());
+        }
+
+        List<Result> results = searchService.search(q, topK);
+        return toTitleUrlMap(results);
+    }
+
+    // =========================
+    // Result -> Map<title,url>
+    // =========================
+    private Map<String, String> toTitleUrlMap(List<Result> results) {
         Map<String, String> map = new LinkedHashMap<>();
+        if (results == null) return map;
+
         for (Result r : results) {
+            if (r == null || r.getOffer() == null) continue;
+
             String source = safe(r.getOffer().getSource());
             String brand  = safe(r.getOffer().getBrand());
             String model  = safe(r.getOffer().getModel());
 
-            // 你原本 title 的邏輯 + 加上 pay（如果你 Result 有 pay）
-            // 若沒有 pay 也不會壞，catch 掉或移除即可
             String titleCore = (brand + " " + model).trim();
             if (titleCore.isEmpty()) titleCore = source;
 
             String title = source + " - " + titleCore;
 
-            // 有些版本 Result 可能有 getPay()，沒有的話就註解這段
+            // 若 Result 有 getPay() 就顯示，沒有就忽略
             try {
                 title += " | pay=" + r.getPay();
             } catch (Exception ignore) {
-                // do nothing
+                // no-op
             }
 
             String url = safe(r.getOffer().getUrl());

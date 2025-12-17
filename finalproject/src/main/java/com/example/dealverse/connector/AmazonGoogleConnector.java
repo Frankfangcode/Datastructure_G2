@@ -32,7 +32,7 @@ public class AmazonGoogleConnector implements Connector {
     public List<RawOffer> fetch(Query query) {
 
         Map<String, String> map =
-                googleSearchService.searchSite(query.getText(), "amazon.com.");
+                googleSearchService.searchSite(query.getText(), "amazon.com");
 
         List<RawOffer> list = new ArrayList<>();
 
@@ -41,7 +41,7 @@ public class AmazonGoogleConnector implements Connector {
             String url   = e.getValue();
 
             // 確保真的屬於 amazon
-            if (!urlMatchesDomain(url, "amazon.com.")) {
+            if (!urlMatchesDomain(url, "amazon.com")) {
                 continue;
             }
 
