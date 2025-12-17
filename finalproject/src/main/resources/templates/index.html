@@ -148,34 +148,73 @@
     .btn-primary:hover{ background:#2563EB; transform:scale(1.05); }
     .btn-primary:focus{ outline:2px solid #fff; outline-offset:2px; }
 
-    /* Site toggles */
-    .sites{
-      margin-top:16px;
-      display:flex;
-      justify-content:center;
-      gap:12px;
-      flex-wrap:wrap;
+    /* 修改後的 Site toggles 區塊 */
+    .sites {
+      margin-top: 24px;
+      display: flex;
+      justify-content: center;
+      gap: 20px; /* 增加按鈕之間的間距 */
+      flex-wrap: wrap;
     }
 
-    .site{
-      width:64px; height:64px;
-      border-radius:999px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:800;
-      letter-spacing:.04em;
-      user-select:none;
-      cursor:pointer;
-      background:#fff;
-      color:var(--fg);
-      transition:transform .2s ease, background-color .2s ease, color .2s ease;
+    .site {
+      /* 取消原版的固定寬高，改為垂直排列 */
+      display: flex;
+      flex-direction: column; 
+      align-items: center;
+      gap: 8px; /* 圓圈與文字的距離 */
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.2s ease;
+      /* 移除原版的背景與圓角設定，因為要移到 .icon-circle */
     }
-    .site:hover{ transform:scale(1.05); background:#E5E7EB; }
 
-    .site.active{
-      background:var(--fg);
-      color:#fff;
+    .site:hover {
+      transform: translateY(-4px); /* 懸停時稍微往上飄，更有動感 */
+    }
+
+/* 新增：專門放 Logo 的圓框 */
+    .icon-circle {
+      width: 64px; /* 維持你喜歡的 64px 大小 */
+      height: 64px;
+      border-radius: 999px;
+      background: #fff;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 10px; /* 讓圖片不要碰到邊緣 */
+      transition: all 0.2s ease;
+    }
+
+    .icon-circle img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain; /* 確保 Logo 比例不變形 */
+    }
+
+/* 新增：圓圈下方的文字標籤 */
+    .site-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--fg);
+      letter-spacing: .02em;
+    }
+
+/* 修改後的 Active 狀態：控制內部的圓圈和文字 */
+    .site.active .icon-circle {
+      background: var(--fg); /* 選中時圓圈變深色（或根據你喜好調整） */
+      border-color: var(--fg);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .site.active .icon-circle img {
+      filter: brightness(0) invert(1); /* 如果是深色背景，強制讓 Logo 變白色（選用） */
+    }
+
+    .site.active .site-label {
+      color: var(--primary); /* 選中時文字顏色改變 */
     }
 
     /* Results section (flat blocks) */
@@ -266,6 +305,51 @@
       padding:12px 14px;
       font-weight:700;
     }
+    .hero-categories {
+      margin-top: 32px;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .cat-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.15); /* 半透明白色 */
+      backdrop-filter: blur(4px);
+      padding: 8px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .cat-item:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .cat-icon {
+      font-size: 18px;
+    }
+
+    .cat-item span {
+      font-weight: 600;
+      font-size: 14px;
+      color: #fff;
+    }
+
+    /* 行動端微調 */
+    @media (max-width: 640px) {
+      .hero-categories {
+        gap: 10px;
+        margin-top: 24px;
+      }
+      .cat-item {
+        padding: 6px 12px;
+      }
+    } 
 
     /* Responsive */
     @media (max-width: 640px){
@@ -291,38 +375,75 @@
         <div class="logo">DealVerse</div>
         <div class="tagline">Flat, fast, focused goods search.</div>
       </div>
+      <div class="hero-categories">
+        <div class="cat-item" onclick="quickSearch('cellphone')">
+          <div class="cat-icon">📱</div>
+          <span>手機</span>
+        </div>
+        <div class="cat-item" onclick="quickSearch('laptop')">
+          <div class="cat-icon">💻</div>
+          <span>筆電</span>
+        </div>
+        <div class="cat-item" onclick="quickSearch('camera')">
+          <div class="cat-icon">📷</div>
+          <span>相機</span>
+        </div>
+        <div class="cat-item" onclick="quickSearch('headphones')">
+          <div class="cat-icon">🎧</div>
+          <span>耳機</span>
+        </div>
+        <div class="cat-item" onclick="quickSearch('smartwatch')">
+          <div class="cat-icon">⌚</div>
+          <span>智慧手錶</span>
+        </div>
+      </div>
     </div>
   </section>
 
   <!-- SEARCH PANEL -->
-  <section class="panel">
-    <div class="container">
-      <form id="searchForm" action="/search" method="get" novalidate>
-        <div class="search-row">
-          <div class="input">
-            <input id="keywordInput"
-                   type="text"
-                   name="keyword"
-                   placeholder="輸入商品名稱，例如：iphone 17 pro"
-                   th:value="${keyword}">
+<section class="panel">
+  <div class="container">
+    <form id="searchForm" action="/search" method="get" novalidate>
+      <div class="search-row">
+        <div class="input">
+          <input id="keywordInput"
+                 type="text"
+                 name="keyword"
+                 placeholder="輸入商品名稱，例如：iphone 17 pro"
+                 th:value="${keyword}">
+        </div>
+        <button class="btn-primary" type="submit">搜尋</button>
+      </div>
+
+      <input type="hidden" id="siteHidden" name="site" th:value="${site}">
+
+      <div class="sites" aria-label="選擇購物網站">
+        <div class="site" data-site="shopee" role="button" tabindex="0">
+          <div class="icon-circle">
+            <img src="/images/shopeeLogo.png" alt="蝦皮">
           </div>
-          <button class="btn-primary" type="submit">搜尋</button>
+          <div class="site-label">蝦皮購物</div>
         </div>
 
-        <!-- 真正送到後端用的 site（空字串 = 全部） -->
-        <input type="hidden" id="siteHidden" name="site" th:value="${site}">
-
-        <!-- 三個圓圈按鈕（UI 用；點同一顆第二次 => 回到全部） -->
-        <div class="sites" aria-label="選擇購物網站">
-          <div class="site" data-site="shopee" role="button" tabindex="0" aria-pressed="false">蝦</div>
-          <div class="site" data-site="momo" role="button" tabindex="0" aria-pressed="false">momo</div>
-          <div class="site" data-site="pchome" role="button" tabindex="0" aria-pressed="false">PCh</div>
+        <div class="site" data-site="momo" role="button" tabindex="0">
+          <div class="icon-circle">
+            <img src="/images/momoLogo.jpg" alt="momo">
+          </div>
+          <div class="site-label">momo</div>
         </div>
-      </form>
 
-      <div th:if="${error != null}" class="error" th:text="${error}"></div>
-    </div>
-  </section>
+        <div class="site" data-site="pchome" role="button" tabindex="0">
+          <div class="icon-circle">
+            <img src="/images/pcHomeLogo.png" alt="PCh">
+          </div>
+          <div class="site-label">PChome</div>
+        </div>
+      </div>
+    </form>
+
+    <div th:if="${error != null}" class="error" th:text="${error}"></div>
+  </div>
+</section>
 
   <!-- RESULTS -->
   <section class="results" th:if="${results != null}">
@@ -393,6 +514,14 @@
 
   // Init
   syncUI();
+  function quickSearch(keyword) {
+    const kwInput = document.getElementById('keywordInput');
+    const form = document.getElementById('searchForm');
+    // 填入關鍵字
+    kwInput.value = keyword;
+    // 觸發搜尋
+    form.submit();
+  }
 </script>
 
 </body>
